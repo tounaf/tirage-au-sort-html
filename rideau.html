@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tirage au Sort</title>
+    <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            position: relative;
+            overflow: hidden; /* Assure que le conteneur des feux d'artifice ne fait pas défiler la page */
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        #result {
+            font-size: 2em;
+            margin: 20px;
+            color: #333;
+        }
+
+        .spinner {
+            width: 200px;
+            height: 200px;
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+            display: none;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            color: #fff;
+            background-color: #3498db;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #fireworks-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* Permet aux clics de passer à travers */
+            z-index: 0; /* Assure que les feux d'artifice sont derrière le contenu principal */
+        }
+
+        /* Styles pour le rideau à gauche et à droite */
+        .curtain {
+            position: fixed;
+            top: 0;
+            width: 50vw;
+            height: 100vh;
+            background-color: #333;
+            z-index: 1;
+            transition: transform 1s ease-out;
+            transform-origin: center;
+        }
+
+        .curtain.left {
+            left: 0;
+            transform: translateX(-100%);
+        }
+
+        .curtain.right {
+            right: 0;
+            transform: translateX(100%);
+        }
+
+        .curtain.open-left {
+            transform: translateX(0);
+        }
+
+        .curtain.open-right {
+            transform: translateX(0);
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            z-index: 2;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .popup.active {
+            display: block;
+        }
+
+        .popup h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .popup button {
+            margin-top: 20px;
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .popup button:hover {
+            background-color: #c0392b;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tirage au Sort</h1>
+        <button id="startButton">Tirer au Sort</button>
+        <div id="spinner" class="spinner"></div>
+    </div>
+    <div id="fireworks-container"></div>
+
+    <!-- Rideau à gauche et à droite -->
+    <div id="curtainLeft" class="curtain left"></div>
+    <div id="curtainRight" class="curtain right"></div>
+
+    <!-- Popup -->
+    <div id="popup" class="popup">
+        <h2 id="winnerMessage"></h2>
+        <button id="closePopup">OK</button>
+    </div>
+
+    <audio id="spinSound" src="spin.mp3" preload="auto"></audio>
+    <audio id="winSound" src="win.mp3" preload="auto"></audio>
+    <script>
+        const names = ["Alice", "Bob", "Charlie", "David", "Eve"];
+        const spinner = document.getElementById('spinner');
+        const startButton = document.getElementById('startButton');
+        const spinSound = document.getElementById('spinSound');
+        const winSound = document.getElementById('winSound');
+        const fireworksContainer = document.getElementById('fireworks-container');
+        const curtainLeft = document.getElementById('curtainLeft');
+        const curtainRight = document.getElementById('curtainRight');
+        const popup = document.getElementById('popup');
+        const winnerMessage = document.getElementById('winnerMessage');
+        const closePopup = document.getElementById('closePopup');
+
+        let fireworksInstance;
+
+        function getRandomName() {
+            return names[Math.floor(Math.random() * names.length)];
+        }
+
+        function startSpin() {
+            spinner.style.display = 'block';
+            spinSound.play();
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                const winner = getRandomName();
+                winnerMessage.textContent = `Le gagnant est ${winner}!`;
+                winSound.play();
+
+                // Initialiser et afficher les feux d'artifice
+                if (fireworksInstance) fireworksInstance.stop();
+                fireworksInstance = new Fireworks.default(fireworksContainer);
+                fireworksInstance.start();
+
+                // Ouvrir les rideaux
+                curtainLeft.classList.add('open-left');
+                curtainRight.classList.add('open-right');
+
+                // Afficher le popup après l'animation des rideaux
+                setTimeout(() => {
+                    popup.classList.add('active');
+                }, 1000); // Attendre que les animations des rideaux soient terminées
+            }, 2000); // 2 seconds to match the spinner animation duration
+        }
+
+        startButton.addEventListener('click', startSpin);
+        closePopup.addEventListener('click', () => {
+            popup.classList.remove('active');
+            curtainLeft.classList.remove('open-left');
+            curtainRight.classList.remove('open-right');
+        });
+    </script>
+</body>
+</html>
