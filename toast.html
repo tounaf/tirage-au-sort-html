@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toasts Amusants</title>
+    <title>Toasts et Connexion</title>
     <style>
         body {
             font-family: 'Comic Sans MS', cursive, sans-serif;
@@ -63,14 +63,89 @@
             50% { transform: translateY(10px); }
             100% { transform: translateY(0); }
         }
+
+        .popup-login {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            z-index: 1001;
+        }
+
+        .popup-login.active {
+            display: block;
+        }
+
+        .popup-login h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #ff69b4;
+        }
+
+        .popup-login img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 15px;
+        }
+
+        .popup-login input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ff69b4;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            width: calc(100% - 24px);
+        }
+
+        .popup-login button {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .popup-login button:hover {
+            background-color: #ff1493;
+        }
+
+        .popup-login .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <button onclick="showToast()">Afficher Toast</button>
+    <button onclick="showPopup()">Se Connecter</button>
 
     <div id="toast-container"></div>
 
+    <div id="popup-login" class="popup-login">
+        <span class="close" onclick="closePopup()">&times;</span>
+        <h2>Connectez-vous à votre espace</h2>
+        <img src="image.png" alt="Emoji Amusant">
+        <input type="password" id="code-input" placeholder="Entrez le code">
+        <button onclick="checkCode()">Se Connecter</button>
+    </div>
+
     <script>
+        // Code d'entrée fixé (crypté)
+        const storedCode = '1234'; // Ce code serait normalement crypté et sécurisé
+
         function showToast() {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -84,8 +159,32 @@
                 toast.classList.add('hide');
                 setTimeout(() => {
                     container.removeChild(toast);
-                }, 500); // Temps pour que l'animation de sortie se termine
-            }, 3000); // Durée pendant laquelle le toast est visible
+                }, 500);
+            }, 3000);
+        }
+
+        function showPopup() {
+            document.getElementById('popup-login').classList.add('active');
+        }
+
+        function closePopup() {
+            document.getElementById('popup-login').classList.remove('active');
+        }
+
+        function checkCode() {
+            const codeInput = document.getElementById('code-input').value;
+            if (codeInput === storedCode) {
+                alert('Connexion réussie !');
+                window.open('drawlot.html');
+                closePopup();
+            } else {
+                alert('Code incorrect, veuillez réessayer.');
+            }
+        }
+
+        // Stocker le code dans le localStorage lors du chargement de la page
+        window.onload = () => {
+            localStorage.setItem('storedCode', storedCode);
         }
     </script>
 </body>
