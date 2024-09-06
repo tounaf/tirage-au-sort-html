@@ -348,31 +348,6 @@
             }, 3000); // Durée pendant laquelle le toast est visible
         }
 
-        function showPopupLogin() {
-            document.getElementById('popup-login').classList.add('active-login');
-        }
-
-        function closePopupLogin() {
-            document.getElementById('popup-login').classList.remove('active-login');
-        }
-
-        function checkCode() {
-            const codeInput = document.getElementById('code-input').value;
-            if (codeInput === storedCode) {
-                alert('Connexion réussie !');
-                closePopupLogin();
-            } else {
-                alert('Code incorrect, veuillez réessayer.');
-            }
-        }
-
-        // Stocker le code dans le localStorage lors du chargement de la page
-        window.onload = () => {
-            showPopupLogin();
-            localStorage.setItem('storedCode', storedCode);
-        }
-
-
         startButton.addEventListener('click', startSpin);
         closePopup.addEventListener('click', () => {
             popup.classList.remove('active');
