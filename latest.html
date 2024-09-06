@@ -164,11 +164,48 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             font-size: 1em;
         }
+
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background-color: #ffeb3b;
+            color: #000;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 16px;
+            font-weight: bold;
+            animation: bounce 0.6s;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.hide {
+            opacity: 0;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(-20px); }
+            50% { transform: translateY(10px); }
+            100% { transform: translateY(0); }
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Tirage au Sort</h1>
+        <h1>1 mois de Design Patterns</h1>
         <button id="startButton">Tirer au Sort</button>
         <div id="spinner" class="spinner"></div>
         <!-- <div id="selectedName"></div> -->
@@ -186,13 +223,15 @@
         <button id="closePopup">OK</button>
     </div>
 
+    <div id="toast-container"></div>
+
     <audio id="spinSound" src="spin.mp3" preload="auto"></audio>
     <audio id="winSound" src="win.mp3" preload="auto"></audio>
     <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
 
     <script>
         const names = [
-            {name: "Miangaly", imageUrl: "", pattern: "State", message: ": Comme un duo parfait 🎭✨!"},
+            {name: "Miangaly", imageUrl: "", pattern: "State", message: "Comme un duo parfait 🎭✨!"},
             {name: "Rachelle", imageUrl: "", pattern: "Factory Method", message: "Les maîtres du fabuleux, fabriquant des solutions comme des artisans de génie ! 🏭✨"}, 
             {name: "Kevin", imageUrl: "", pattern: "Template Method", message: "La recette secrète pour des solutions élégantes, avec un peu de magie en prime ! 🍳✨"}, 
             {name: "HariFenitra", imageUrl: "", pattern: "Adapter", message: "Le couple qui rend tout compatible, même les chaussettes dépareillées ! 🧦🔄"}, 
@@ -204,7 +243,11 @@
             {name: "Tiavina", imageUrl: "", pattern: "Decorator", message: "Ils transforment le banal en spectaculaire, comme des magiciens de la déco ! 🎨🪄"}, 
             {name: "Malala", imageUrl: "", pattern: "Facade", message: "La façade qui cache un monde incroyable derrière, comme un livre avec une couverture fascinante ! 📚🎭"},
             {name: "Asahel", imageUrl: "", pattern: "Singleton", message: "Le duo qui prouve qu'une seule instance suffit pour briller comme un roi ! 👑🔒"},
-            {name: "Nancya", imageUrl: "", pattern: "Chain of Responsability", message: " Ils transmettent les tâches comme des relais dans une course de relais épique ! 🏃‍♀️🔗"}
+            {name: "Nancya", imageUrl: "", pattern: "Chain of Responsability", message: " Ils transmettent les tâches comme des relais dans une course de relais épique ! 🏃‍♀️🔗"},
+            
+            {name: "Pascal", imageUrl: "", pattern: "Chain of Responsability", message: " Ils transmettent les tâches comme des relais dans une course de relais épique ! 🏃‍♀️🔗"},
+            {name: "Pascal", imageUrl: "", pattern: "Chain of Responsability", message: " Ils transmettent les tâches comme des relais dans une course de relais épique ! 🏃‍♀️🔗"}
+
         ];
         const spinner = document.getElementById('spinner');
         const startButton = document.getElementById('startButton');
@@ -218,6 +261,8 @@
         const chosenNames = document.getElementById('chosenNames');
         let currentIndex;
         let fireworksInstance;
+        let countItem = 0;
+        let currentName;
 
         function getRandomName() {
             currentIndex = Math.floor(Math.random() * names.length);
@@ -226,9 +271,11 @@
 
         function startSpin() {
             if (names.length === 0) {
-                winnerMessage.textContent = "Le jeu est terminé !";
+                
+                // winnerMessage.textContent = "Le jeu est terminé !";
                 popup.classList.add('active');
                 startButton.disabled = true;
+                showToast();
                 return;
             }
 
@@ -246,16 +293,19 @@
                 messageElement.textContent = winner.message;
 
                 // Ajouter l'élément choisi à la liste des éléments choisis
+                countItem++;
+
                 const itemElement = document.createElement('div');
                 itemElement.className = 'chosen-item';
-                itemElement.textContent = `${winner.name}(${winner.pattern})`;
+                itemElement.textContent = `${countItem}. ${winner.name}(${winner.pattern})`;
                 chosenNames.appendChild(itemElement);
-
+                currentName = winner.name;
                 // Supprimer l'élément du tableau
                 names.splice(currentIndex, 1);
 
                 if (names.length === 0) {
-                    winnerMessage.textContent = "Le jeu est terminé !";
+                    // winnerMessage.textContent = "Le jeu est terminé !";
+                    showToast();
                     startButton.disabled = true;
                 }
 
@@ -274,9 +324,27 @@
             }, 2000); // 2 seconds to match the spinner animation duration
         }
 
+        function showToast(name = null) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = name === null ?'🎉 Le jeu est terminé ! 🎉' : `🎉 Félicications ${name} ! 🎉`;
+
+            container.appendChild(toast);
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    container.removeChild(toast);
+                }, 500); // Temps pour que l'animation de sortie se termine
+            }, 3000); // Durée pendant laquelle le toast est visible
+        }
+
         startButton.addEventListener('click', startSpin);
         closePopup.addEventListener('click', () => {
             popup.classList.remove('active');
+            showToast(currentName);
             fireworksInstance.stop();
         });
     </script>

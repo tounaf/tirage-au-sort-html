@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>1 mois de Design Patterns</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background: linear-gradient(to right, #f9a1bc, #fcd2a5); /* Dégradé coloré */
             position: relative;
             overflow: hidden; /* Ensure fireworks container does not cause scroll */
         }
@@ -21,6 +20,24 @@
         .container {
             text-align: center;
             position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #fff;
+            margin-bottom: 20px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        #countdown {
+            font-size: 3em;
+            color: #fff;
+            margin: 20px auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             z-index: 1;
         }
 
@@ -33,12 +50,14 @@
         .spinner {
             width: 200px;
             height: 200px;
-            border: 16px solid #f3f3f3;
-            border-top: 16px solid #3498db;
+            border: 16px solid #fff;
+            border-top: 16px solid #e74c3c; /* Rouge vif pour l'animation */
             border-radius: 50%;
             animation: spin 2s linear infinite;
             display: none;
             margin: 20px auto;
+            position: relative;
+            z-index: 0;
         }
 
         @keyframes spin {
@@ -47,17 +66,23 @@
         }
 
         button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 1.2em;
             color: #fff;
-            background-color: #3498db;
+            background-color: #3498db; /* Bleu vif */
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #2980b9;
+        button:disabled {
+            background-color: #95a5a6; /* Gris clair lorsque désactivé */
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #2980b9; /* Bleu plus foncé pour le survol */
         }
 
         #fireworks-container {
@@ -69,59 +94,231 @@
             pointer-events: none; /* Permet aux clics de passer à travers */
             z-index: 0; /* Assure que les feux d'artifice sont derrière le contenu principal */
         }
+
+        /* Popup Styles */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            z-index: 2;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .popup.active {
+            display: block;
+        }
+
+        .popup h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #e74c3c; /* Rouge vif pour le titre */
+        }
+
+        .popup .name-pattern {
+            font-size: 1.2em;
+            color: #3498db; /* Bleu vif pour le nom et le pattern */
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .popup .message {
+            font-size: 1em;
+            color: #333; /* Couleur pour le message */
+        }
+
+        .popup button {
+            margin-top: 20px;
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .popup button:hover {
+            background-color: #c0392b;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #selectedName {
+            font-size: 1.5em;
+            color: #fff;
+            margin: 20px 0;
+        }
+
+        #chosenNames {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .chosen-item {
+            background-color: #fff;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1em;
+        }
     </style>
 </head>
 <body>
-    
     <div class="container">
-        <h1>Tirage au Sort</h1>
+        <h1>1 mois de Design Patterns</h1>
+        <div id="countdown">3</div>
         <button id="startButton">Tirer au Sort</button>
-        <div id="result"></div>
         <div id="spinner" class="spinner"></div>
+        <div id="chosenNames"></div>
     </div>
-    
-    <div class="fireworks"></div>
+    <div id="fireworks-container"></div>
 
-    <!-- jsDelivr  -->
+    <!-- Popup -->
+    <div id="popup" class="popup">
+        <h2 id="winnerTitle">Tirage au Sort</h2>
+        <div id="winnerContent">
+            <div id="winnerNamePattern" class="name-pattern"></div>
+            <div id="winnerMessage" class="message"></div>
+        </div>
+        <button id="closePopup">OK</button>
+    </div>
 
+    <audio id="spinSound" src="spin.mp3" preload="auto"></audio>
+    <audio id="winSound" src="win.mp3" preload="auto"></audio>
     <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
 
-<script>
+    <script>
+        const names = [
+            {name: "Miangaly", imageUrl: "", pattern: "State", message: ": Comme un duo parfait 🎭✨!"},
+            {name: "Rachelle", imageUrl: "", pattern: "Factory Method", message: "Les maîtres du fabuleux, fabriquant des solutions comme des artisans de génie ! 🏭✨"}, 
+            {name: "Kevin", imageUrl: "", pattern: "Template Method", message: "La recette secrète pour des solutions élégantes, avec un peu de magie en prime ! 🍳✨"}, 
+            {name: "HariFenitra", imageUrl: "", pattern: "Adapter", message: "Le couple qui rend tout compatible, même les chaussettes dépareillées ! 🧦🔄"}, 
+            {name: "Ariry", imageUrl: "", pattern: "Value Object", message: "Ils apportent la valeur où qu'ils aillent, comme des joyaux dans un coffre au trésor ! 💎🌟"}, 
+            {name: "Mahery", imageUrl: "", pattern: "Builder", message: "Ils construisent des rêves, brique par brique, comme des architectes du bonheur ! 🏗️🏆"}, 
+            {name: "Andrianina", imageUrl: "", pattern: "Strategy", message: "Un duo stratégique, prêt à conquérir le monde avec un plan bien ficelé ! 🗺️🚀"}, 
+            {name: "Josia", imageUrl: "", pattern: "Flyweight", message: "Léger comme une plume, mais puissant comme une tornade ! 🪶💨"}, 
+            {name: "Amy", imageUrl: "", pattern: "Prototype", message: "Ils définissent le modèle du succès, comme des inventeurs de génie ! 🛠️💡"}, 
+            {name: "Tiavina", imageUrl: "", pattern: "Decorator", message: "Ils transforment le banal en spectaculaire, comme des magiciens de la déco ! 🎨🪄"}, 
+            {name: "Malala", imageUrl: "", pattern: "Facade", message: "La façade qui cache un monde incroyable derrière, comme un livre avec une couverture fascinante ! 📚🎭"},
+            {name: "Asahel", imageUrl: "", pattern: "Singleton", message: "Le duo qui prouve qu'une seule instance suffit pour briller comme un roi ! 👑🔒"},
+            {name: "Nancya", imageUrl: "", pattern: "Chain of Responsability", message: " Ils transmettent les tâches comme des relais dans une course effrénée ! 🏃‍♂️🏃‍♀️"}, 
+            {name: "John", imageUrl: "", pattern: "Observer", message: "Le duo qui surveille et ajuste les choses, comme des yeux de lynx dans la nuit ! 👁️🌙"}, 
+            {name: "Evelyn", imageUrl: "", pattern: "Mediator", message: "Ils font la paix entre les parties comme des diplomates de la sérénité ! 🤝🕊️"}, 
+            {name: "Rim", imageUrl: "", pattern: "Prototype", message: "Ils clonent des idées géniales, comme des artistes créant des œuvres d'art ! 🎨✨"}, 
+            {name: "David", imageUrl: "", pattern: "Command", message: "Le duo qui ordonne avec puissance, comme des généraux de la stratégie ! 🎖️⚔️"}, 
+            {name: "Jane", imageUrl: "", pattern: "Composite", message: "Ils assemblent des éléments divers en une œuvre harmonieuse, comme des musiciens d'un orchestre ! 🎼🎻"}, 
+            {name: "Sarah", imageUrl: "", pattern: "Prototype", message: "Le modèle parfait de la création, comme un architecte d'idées brillantes ! 🏛️💡"}, 
+            {name: "Paul", imageUrl: "", pattern: "Builder", message: "Ils construisent des solutions comme des ingénieurs des rêves ! 🔧🛠️"}, 
+            {name: "Lena", imageUrl: "", pattern: "Adapter", message: "Ils adaptent les idées comme des caméléons dans un monde en constante évolution ! 🦎🌍"}, 
+            {name: "Tom", imageUrl: "", pattern: "Decorator", message: "Ils ajoutent du style et de l'éclat, comme des artistes de la décoration ! 🎨✨"}, 
+            {name: "Mia", imageUrl: "", pattern: "Strategy", message: "Ils élaborent des stratégies comme des maîtres tacticiens ! 🧠🏆"},
+            {name: "Lucas", imageUrl: "", pattern: "Flyweight", message: "Ils apportent l'efficacité comme des machines bien huilées ! ⚙️🚀"}, 
+            {name: "Ella", imageUrl: "", pattern: "Value Object", message: "Ils apportent une valeur inestimable, comme des trésors cachés ! 💎🌟"}, 
+            {name: "Aiden", imageUrl: "", pattern: "Facade", message: "Ils simplifient les choses comme des guides touristiques du monde du code ! 🌍📖"}, 
+            {name: "Sophia", imageUrl: "", pattern: "Chain of Responsability", message: "Ils gèrent les responsabilités comme des chefs d'orchestre d'une symphonie ! 🎻🎼"}, 
+            {name: "Daniel", imageUrl: "", pattern: "Mediator", message: "Ils apportent l'harmonie comme des modérateurs de débats ! 🗣️🤝"},
+            {name: "Olivia", imageUrl: "", pattern: "Command", message: "Ils lancent des ordres avec précision, comme des maîtres d'orchestre ! 🎹🎶"}
+        ];
 
-    const names = ["Alice", "Bob", "Charlie", "David", "Eve"];
-    const resultDiv = document.getElementById('result');
-    const spinner = document.getElementById('spinner');
-    const startButton = document.getElementById('startButton');
-    const spinSound = document.getElementById('spinSound');
-    const winSound = document.getElementById('winSound');
-    const container = document.querySelector('.fireworks')
-    
-    function getRandomName() {
-        return names[Math.floor(Math.random() * names.length)];
-    }
+        let countdown = document.getElementById('countdown');
+        let startButton = document.getElementById('startButton');
+        let spinner = document.getElementById('spinner');
+        let popup = document.getElementById('popup');
+        let winnerTitle = document.getElementById('winnerTitle');
+        let winnerNamePattern = document.getElementById('winnerNamePattern');
+        let winnerMessage = document.getElementById('winnerMessage');
+        let closePopupButton = document.getElementById('closePopup');
+        let fireworksContainer = document.getElementById('fireworks-container');
+        let spinSound = document.getElementById('spinSound');
+        let winSound = document.getElementById('winSound');
+        let chosenNames = document.getElementById('chosenNames');
+        let selectedName = document.getElementById('selectedName');
 
-    const fireworks = new Fireworks.default(container)
+        let countdownValue = 3;
+        let interval;
 
-    function startSpin() {
-            spinner.style.display = 'block';
-            fireworks.stop()
-            // spinSound.play();
-            setTimeout(() => {
-                spinner.style.display = 'none';
-                const winner = getRandomName();
-                resultDiv.textContent = `Le gagnant est ${winner}!`;
-                // winSound.play();
-                
-
-                fireworks.start()
-
-            }, 2000); // 2 seconds to match the spinner animation duration
+        function startCountdown() {
+            countdown.textContent = countdownValue;
+            interval = setInterval(() => {
+                countdownValue--;
+                countdown.textContent = countdownValue;
+                if (countdownValue <= 0) {
+                    clearInterval(interval);
+                    countdown.textContent = '';
+                    startButton.disabled = true;
+                    startDraw();
+                }
+            }, 1000);
         }
 
-    startButton.addEventListener('click', startSpin);
+        function startDraw() {
+            spinner.style.display = 'block';
+            spinSound.play();
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                spinSound.pause();
+                spinSound.currentTime = 0;
+                let winnerIndex = Math.floor(Math.random() * names.length);
+                let winner = names[winnerIndex];
+                showPopup(winner);
+                updateChosenNames(winner);
+            }, 2000);
+        }
 
-    
-</script>
+        function showPopup(winner) {
+            winnerTitle.textContent = 'Gagnant du Tirage';
+            winnerNamePattern.textContent = `${winner.name} (${winner.pattern})`;
+            winnerMessage.textContent = winner.message;
+            popup.classList.add('active');
+            winSound.play();
+            createFireworks();
+        }
 
+        function updateChosenNames(winner) {
+            let item = document.createElement('div');
+            item.className = 'chosen-item';
+            item.textContent = `${winner.name} (${winner.pattern})`;
+            chosenNames.appendChild(item);
+        }
+
+        function createFireworks() {
+            const fireworks = new Fireworks(fireworksContainer, {
+                speed: 3,
+                acceleration: 1.05,
+                friction: 0.98,
+                gravity: 0.1,
+                particles: 100,
+                trace: 3,
+                explosion: 5
+            });
+            fireworks.start();
+            setTimeout(() => fireworks.stop(), 5000); // Stop fireworks after 5 seconds
+        }
+
+        startButton.addEventListener('click', () => {
+            startCountdown();
+        });
+
+        closePopupButton.addEventListener('click', () => {
+            popup.classList.remove('active');
+            startButton.disabled = false;
+        });
+    </script>
 </body>
 </html>
